@@ -16,6 +16,21 @@ def project_root() -> Path:
     return Path(__file__).resolve().parent.parent
 
 
+INPUT_EXTENSIONS = (".mp4", ".mov")
+
+
+def find_input_video(input_dir: Path, stem: str) -> Path:
+    """Return input/<stem>.mp4 or input/<stem>.mov (first match wins).
+
+    If neither exists, returns the .mp4 path so callers can report it as missing.
+    """
+    for ext in INPUT_EXTENSIONS:
+        candidate = input_dir / f"{stem}{ext}"
+        if candidate.is_file():
+            return candidate
+    return input_dir / f"{stem}.mp4"
+
+
 def format_timestamp(seconds: float) -> str:
     """Format seconds as HH:MM:SS.mmm (milliseconds, 3 digits)."""
     if seconds < 0:
@@ -180,8 +195,9 @@ def analyze_video(
 
 def main() -> int:
     root = project_root()
-    reference = root / "input" / "reference.mp4"
-    raw = root / "input" / "raw_footage.mp4"
+    input_dir = root / "input"
+    reference = find_input_video(input_dir, "reference")
+    raw = find_input_video(input_dir, "raw_footage")
     temp = root / "temp"
 
     print(f"[extract_both] Project root: {root}")
@@ -195,7 +211,7 @@ def main() -> int:
         print(
             "ERROR: Missing required input video(s):\n  - "
             + "\n  - ".join(missing)
-            + "\nPlace reference.mp4 and raw_footage.mp4 under input/ and re-run.",
+            + "\nPlace reference.mp4 or reference.mov and raw_footage.mp4 or raw_footage.mov under input/ and re-run.",
             file=sys.stderr,
         )
         return 1

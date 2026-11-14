@@ -17,6 +17,21 @@ def project_root() -> Path:
     return Path(__file__).resolve().parent.parent
 
 
+INPUT_EXTENSIONS = (".mp4", ".mov")
+
+
+def find_input_video(input_dir: Path, stem: str) -> Path:
+    """Return input/<stem>.mp4 or input/<stem>.mov (first match wins).
+
+    If neither exists, returns the .mp4 path so callers can report it as missing.
+    """
+    for ext in INPUT_EXTENSIONS:
+        candidate = input_dir / f"{stem}{ext}"
+        if candidate.is_file():
+            return candidate
+    return input_dir / f"{stem}.mp4"
+
+
 def ensure_ffmpeg_binary() -> None:
     if shutil.which("ffmpeg") is None:
         raise SystemExit(
@@ -161,7 +176,7 @@ def build_arg_parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> int:
     args = build_arg_parser().parse_args(argv)
     root = project_root()
-    video_path = root / "input" / "raw_footage.mp4"
+    video_path = find_input_video(root / "input", "raw_footage")
     output_dir = root / "output"
     temp_dir = root / "temp"
     output_path = output_dir / "final_edit.mp4"
@@ -172,7 +187,7 @@ def main(argv: list[str] | None = None) -> int:
 
     if not video_path.is_file():
         print(
-            f"ERROR: Missing input video.\n  Expected: {video_path}",
+            f"ERROR: Missing input video.\n  Expected: input/raw_footage.mp4 or input/raw_footage.mov",
             file=sys.stderr,
         )
         return 1

@@ -11,8 +11,8 @@ When the user says **"Run the style-transfer edit."** (or clear equivalent), exe
 ### Step 1 — Extract both videos
 
 1. Confirm both inputs exist:
-   - `input/reference.mp4` — the ~1‑minute style/pacing reference
-   - `input/raw_footage.mp4` — the longer source to trim
+   - `input/reference.mp4` or `input/reference.mov` — the ~1‑minute style/pacing reference
+   - `input/raw_footage.mp4` or `input/raw_footage.mov` — the longer source to trim
    If either is missing, stop and tell the user what to place where.
 2. Run:
 
@@ -65,7 +65,7 @@ python scripts/render_cut.py 00:00:12.000 00:00:15.400 00:00:40.000 00:00:43.200
 
 ## Rules
 
-- Cuts always come from `input/raw_footage.mp4` (never re-cut the reference into the final unless the user asks).
+- Cuts always come from `input/raw_footage.mp4` or `input/raw_footage.mov`, whichever exists (never re-cut the reference into the final unless the user asks).
 - Prefer lossless concat (`-c copy`); do not re-encode unless the user asks.
-- Never delete `input/reference.mp4` or `input/raw_footage.mp4`.
+- Never delete `input/reference.*` or `input/raw_footage.*` (either .mp4 or .mov).
 - If extract outputs are missing/stale, re-run `scripts/extract_both.py` before matching.
