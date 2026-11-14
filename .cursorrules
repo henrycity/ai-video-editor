@@ -1,0 +1,71 @@
+# AI Video Editor — style-transfer workflow engine
+
+You are the editing agent for this project. Paths below are relative to the project root (this folder).
+
+## Trigger
+
+When the user says **"Run the style-transfer edit."** (or clear equivalent), execute the full pipeline below. Do not invent matches without comparing reference and raw thumbnails.
+
+## Pipeline
+
+### Step 1 — Extract both videos
+
+1. Confirm both inputs exist:
+   - `input/reference.mp4` — the ~1‑minute style/pacing reference
+   - `input/raw_footage.mp4` — the longer source to trim
+   If either is missing, stop and tell the user what to place where.
+2. Run:
+
+```bash
+python scripts/extract_both.py
+```
+
+3. Expect outputs:
+   - `temp/reference_scenes.csv` — `Scene_Number, Start_Time (HH:MM:SS.ms), End_Time (HH:MM:SS.ms), Duration (seconds)`
+   - `temp/reference_thumbs/scene_001.jpg`, …
+   - `temp/raw_scenes.csv` — same columns
+   - `temp/raw_thumbs/scene_001.jpg`, …
+
+### Step 2 — Style + pacing match
+
+1. Ingest `temp/reference_scenes.csv`. The **Duration (seconds)** of each reference scene is the exact target length for that beat in the final edit. The sum of reference durations is the expected final runtime.
+2. Analyze images in `temp/reference_thumbs/` alongside `temp/raw_thumbs/` (open/view JPEGs). For each reference scene, pick the raw scene that best matches visual composition (e.g. wide→wide, product close-up→product close-up, face→face). Prefer unused raw scenes when quality is similar (avoid repeating the same raw scene unless necessary).
+3. For each match, **trim the selected raw clip to the exact duration of its reference scene**:
+   - Prefer centering the trim on the raw scene midpoint, or the most visually relevant portion of that raw scene.
+   - Compute `start` / `end` on `raw_footage.mp4` in `HH:MM:SS.ms` such that `(end − start) ≈ reference Duration`.
+   - Do not exceed the raw scene’s own start/end bounds when possible.
+4. Propose the matched **timestamp cut list** to the user, ordered like the reference timeline. For each cut include:
+   - reference scene number + duration
+   - chosen raw scene number
+   - raw `start` / `end`
+   - one-line visual rationale
+5. Also offer JSON ready for render:
+
+```json
+[{"start": "00:00:12.000", "end": "00:00:15.400"}]
+```
+
+### Step 3 — Wait for explicit approval
+
+- Do **not** render until the user explicitly approves (e.g. "approved", "looks good", "render it").
+- If they request changes, revise matches/trims and wait again.
+
+### Step 4 — Render
+
+1. Write approved cuts to `temp/approved_cuts.json` (format above), **or** pass pairs on the CLI.
+2. Run one of:
+
+```bash
+python scripts/render_cut.py --cuts temp/approved_cuts.json
+python scripts/render_cut.py 00:00:12.000 00:00:15.400 00:00:40.000 00:00:43.200
+```
+
+3. Confirm success and point the user to `output/final_edit.mp4`.
+4. Remind them that stream-copy preserves source aspect — raw footage should already be vertical 9:16.
+
+## Rules
+
+- Cuts always come from `input/raw_footage.mp4` (never re-cut the reference into the final unless the user asks).
+- Prefer lossless concat (`-c copy`); do not re-encode unless the user asks.
+- Never delete `input/reference.mp4` or `input/raw_footage.mp4`.
+- If extract outputs are missing/stale, re-run `scripts/extract_both.py` before matching.

@@ -1,0 +1,33 @@
+# Python
+venv/
+.venv/
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.Python
+
+# Videos / media artifacts
+*.mp4
+*.mov
+*.avi
+*.mkv
+*.webm
+
+# Temp pipeline outputs (keep directory markers)
+temp/**/*.csv
+temp/**/*.jpg
+temp/**/*.jpeg
+temp/**/*.png
+temp/**/*.webp
+!temp/**/.gitkeep
+
+# Output videos (keep directory marker)
+output/**
+!output/.gitkeep
+
+# OS / editor
+.DS_Store
+*.swp
+.idea/
+.vscode/
