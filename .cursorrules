@@ -26,19 +26,21 @@ python scripts/extract_both.py
    - `temp/raw_scenes.csv` — same columns
    - `temp/raw_thumbs/scene_001.jpg`, …
 
-### Step 2 — Style + pacing match
+### Step 2 — Inspiration-only style + pacing match
+
+The reference may show a **different product or brand**. Match **pacing, energy, shot duration, and narrative shape** only — do **not** require the same product steps, demos, or literal on-screen actions. Treat the reference as inspiration for edit rhythm and shot grammar, not a shot-for-shot product script.
 
 1. Ingest `temp/reference_scenes.csv`. The **Duration (seconds)** of each reference scene is the exact target length for that beat in the final edit. The sum of reference durations is the expected final runtime.
-2. Analyze images in `temp/reference_thumbs/` alongside `temp/raw_thumbs/` (open/view JPEGs). For each reference scene, pick the raw scene that best matches visual composition (e.g. wide→wide, product close-up→product close-up, face→face). Prefer unused raw scenes when quality is similar (avoid repeating the same raw scene unless necessary).
+2. Analyze images in `temp/reference_thumbs/` alongside `temp/raw_thumbs/` (open/view JPEGs). For each reference beat, pick the raw scene that best matches **shot type / energy / composition role** (e.g. wide→wide, close-up→close-up, face→face, motion→motion) — **not** the same product or the same tutorial step. Prefer unused raw scenes when quality is similar (avoid repeating the same raw scene unless necessary).
 3. For each match, **trim the selected raw clip to the exact duration of its reference scene**:
    - Prefer centering the trim on the raw scene midpoint, or the most visually relevant portion of that raw scene.
-   - Compute `start` / `end` on `raw_footage.mp4` in `HH:MM:SS.ms` such that `(end − start) ≈ reference Duration`.
+   - Compute `start` / `end` on the raw footage file in `HH:MM:SS.ms` such that `(end − start) ≈ reference Duration`.
    - Do not exceed the raw scene’s own start/end bounds when possible.
-4. Propose the matched **timestamp cut list** to the user, ordered like the reference timeline. For each cut include:
+4. Propose the matched **timestamp cut list** to the user, ordered like the reference timeline. **State clearly that matching is inspiration-only** (pacing/energy/duration/narrative shape — not same-product steps). For each cut include:
    - reference scene number + duration
    - chosen raw scene number
    - raw `start` / `end`
-   - one-line visual rationale
+   - one-line rationale (shot/energy fit, not product-step parity)
 5. Also offer JSON ready for render:
 
 ```json
@@ -65,6 +67,7 @@ python scripts/render_cut.py 00:00:12.000 00:00:15.400 00:00:40.000 00:00:43.200
 
 ## Rules
 
+- **Inspiration-only:** never require the raw footage to recreate the reference’s product, brand, or step sequence; match pacing/energy/shot duration/narrative shape only, and say so when proposing cuts.
 - Cuts always come from `input/raw_footage.mp4` or `input/raw_footage.mov`, whichever exists (never re-cut the reference into the final unless the user asks).
 - Prefer lossless concat (`-c copy`); do not re-encode unless the user asks.
 - Never delete `input/reference.*` or `input/raw_footage.*` (either .mp4 or .mov).

@@ -2,6 +2,8 @@
 
 Match the pacing and visual composition of a short reference Reel/TikTok to a longer raw clip. Local pipeline for M4 Mac.
 
+**Inspiration-only matching:** the reference may be a different product or brand. The pipeline matches pacing, energy, shot duration, and narrative shape — not the same product steps or a literal demo recreation. Cut proposals should call that out.
+
 ## Setup
 
 ```bash
